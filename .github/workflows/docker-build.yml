@@ -23,3 +23,18 @@ jobs:
 
       - name: Push image to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/devops-cicd-demo:latest
+        name: Set up Google Cloud SDK
+uses: google-github-actions/setup-gcloud@v2
+with:
+project_id: ${{ secrets.GCP_PROJECT_ID }}
+service_account_key: ${{ secrets.GCP_SA_KEY }}
+export_default_credentials: true
+
+name: Configure kubectl
+run: |
+gcloud container clusters get-credentials devops-demo-cluster --zone asia-south1 --project ${{ secrets.GCP_PROJECT_ID }}
+
+name: Deploy new image to GKE
+run: |
+kubectl set image deployment/devops-demo-deployment devops-demo=thecloudschool/devops-cicd-demo:latest
+kubectl rollout status deployment/devops-demo-deployment
